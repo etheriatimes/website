@@ -1,0 +1,65 @@
+# Development Dockerfile for Aether Account
+# Usage: docker compose -f docker-compose.dev.yml up
+
+FROM node:20-alpine AS base
+
+# Set working directory
+WORKDIR /app
+
+# Install OS dependencies
+RUN apk add --no-cache \
+    wget \
+    ca-certificates \
+    curl \
+    git \
+    bash \
+    nginx \
+    build-base \
+    libc6-compat
+
+# Install Go
+RUN wget -q https://go.dev/dl/go1.25.4.linux-amd64.tar.gz -O /tmp/go.tar \
+    && tar -C /usr/local -xzf /tmp/go.tar \
+    && rm /tmp/go.tar
+
+ENV PATH="/usr/local/go/bin:/go/bin:${PATH}"
+ENV GOPATH="/go"
+
+# Install development Go tools
+RUN mkdir -p /go/bin \
+    && go install github.com/air-verse/air@latest \
+    && go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest \
+    && go install github.com/pressly/goose/cmd/goose@latest
+
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy only package files first (for caching pnpm install)
+COPY app/package.json app/pnpm-lock.yaml* ./app/
+
+# Install dependencies
+WORKDIR /app/app
+RUN pnpm install
+
+# Copy application and server code
+COPY app/ /app/app/
+COPY server/ /app/server/
+COPY go.mod go.sum* /app/
+
+# Download Go modules
+WORKDIR /app
+RUN go mod download
+
+# Copy Nginx config
+COPY app/nginx.conf /etc/nginx/http.d/default.conf
+
+# Expose ports
+EXPOSE 3000
+
+# Start container
+# - Creates logs/tmp directories
+# - Ensures pnpm dependencies are linked
+# - Starts nginx
+# - Starts Air for live reload (Go)
+# - Starts Next.js dev server
+CMD ["sh", "-c", "mkdir -p /app/app/src/logs /app/tmp && cd /app/app && pnpm install --frozen-lockfile || true && nginx && cd /app && air -c .air.toml"]
