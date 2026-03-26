@@ -109,7 +109,7 @@ export function AdminHeader() {
               >
                 <div className="flex items-center gap-2 w-full">
                   {notification.unread && (
-                    <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0" />
+                    <div className="h-2 w-2 rounded-full bg-primary shrink-0" />
                   )}
                   <span className="font-medium text-sm">{notification.title}</span>
                 </div>

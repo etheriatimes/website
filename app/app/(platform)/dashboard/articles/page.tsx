@@ -449,7 +449,7 @@ export default function ArticlesPage() {
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link href={`/article/${article.id}`} target="_blank">
+                            <Link href={`/dashboard/articles/${article.id}`}>
                               <Eye className="mr-2 h-4 w-4" />
                               Voir
                             </Link>

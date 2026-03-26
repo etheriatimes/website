@@ -102,8 +102,6 @@ export function AdminSidebar() {
         </Link>
       </SidebarHeader>
       
-      <SidebarSeparator />
-      
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Principal</SidebarGroupLabel>
@@ -184,7 +182,7 @@ export function AdminSidebar() {
                 </Avatar>
                 <div className="flex flex-col group-data-[collapsible=icon]:hidden">
                   <span className="text-sm font-medium">Admin</span>
-                  <span className="text-[10px] text-muted-foreground">admin@etheria.news</span>
+                  <span className="text-[10px] text-muted-foreground">admin@etheriatimes.com</span>
                 </div>
               </div>
             </SidebarMenuButton>
