@@ -20,7 +20,7 @@ const categories = [
   { name: "À la une", href: "/" },
   { name: "Politique", href: "/politique" },
   { name: "Économie", href: "/economie" },
-  { name: "International", href: "/international" },
+  { name: "Monde", href: "/monde" },
   { name: "Culture", href: "/culture" },
   { name: "Sport", href: "/sport" },
   { name: "Étudiant", href: "/etudiant" },

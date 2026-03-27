@@ -29,14 +29,14 @@ export function ArticleCard({
       <Link href={href} className="group block">
         <article className="relative overflow-hidden rounded-sm">
           {image && (
-            <div className="relative aspect-[16/9] overflow-hidden">
+            <div className="relative aspect-video overflow-hidden">
               <Image
                 src={image}
                 alt={title}
                 fill
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
             </div>
           )}
           <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6">
@@ -64,7 +64,7 @@ export function ArticleCard({
       <Link href={href} className="group block">
         <article className="flex gap-4">
           {image && (
-            <div className="relative w-32 h-20 md:w-40 md:h-24 flex-shrink-0 overflow-hidden rounded-sm">
+            <div className="relative w-32 h-20 md:w-40 md:h-24 shrink-0 overflow-hidden rounded-sm">
               <Image
                 src={image}
                 alt={title}
@@ -116,7 +116,7 @@ export function ArticleCard({
     <Link href={href} className="group block">
       <article>
         {image && (
-          <div className="relative aspect-[16/10] overflow-hidden rounded-sm mb-3">
+          <div className="relative aspect-16/10 overflow-hidden rounded-sm mb-3">
             <Image
               src={image}
               alt={title}

@@ -21,6 +21,11 @@ import {
   Key,
   Search,
   Shield,
+  Share2,
+  Globe,
+  Video,
+  Clock,
+  Calendar,
 } from "lucide-react";
 
 import {
@@ -127,6 +132,62 @@ const settingsNavItems = [
   },
 ];
 
+const socialNavItems = [
+  {
+    title: "Publications",
+    href: "/dashboard/publications",
+    icon: Share2,
+  },
+  {
+    title: "Comptes sociaux",
+    href: "/dashboard/social-accounts",
+    icon: Globe,
+  },
+  {
+    title: "Planification",
+    href: "/dashboard/scheduling",
+    icon: Clock,
+  },
+  {
+    title: "Statistiques sociales",
+    href: "/dashboard/social-analytics",
+    icon: BarChart3,
+  },
+];
+
+const socialMediaNavItems = [
+  {
+    title: "X (Twitter)",
+    href: "/dashboard/social/twitter",
+    icon: Share2,
+  },
+  {
+    title: "Facebook",
+    href: "/dashboard/social/facebook",
+    icon: Globe,
+  },
+  {
+    title: "Instagram",
+    href: "/dashboard/social/instagram",
+    icon: Image,
+  },
+  {
+    title: "LinkedIn",
+    href: "/dashboard/social/linkedin",
+    icon: Globe,
+  },
+  {
+    title: "YouTube",
+    href: "/dashboard/social/youtube",
+    icon: Video,
+  },
+  {
+    title: "Discord",
+    href: "/dashboard/social/discord",
+    icon: MessageSquare,
+  },
+];
+
 export function AdminSidebar() {
   const pathname = usePathname();
 
@@ -168,6 +229,42 @@ export function AdminSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {managementNavItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.title}>
+                    <Link href={item.href}>
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Réseaux sociaux</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {socialNavItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.title}>
+                    <Link href={item.href}>
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Plateformes</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {socialMediaNavItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.title}>
                     <Link href={item.href}>
