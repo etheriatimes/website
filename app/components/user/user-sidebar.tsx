@@ -4,15 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  FileText,
-  Users,
-  BarChart3,
-  Settings,
-  MessageSquare,
-  FolderOpen,
-  Image,
+  Bookmark,
+  Clock,
   Bell,
+  Settings,
   LogOut,
+  CreditCard,
   Newspaper,
 } from "lucide-react";
 
@@ -34,58 +31,45 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 const mainNavItems = [
   {
     title: "Tableau de bord",
-    href: "/dashboard",
+    href: "/user",
     icon: LayoutDashboard,
   },
   {
-    title: "Articles",
-    href: "/dashboard/articles",
-    icon: FileText,
+    title: "Mes articles",
+    href: "/user/articles",
+    icon: Newspaper,
   },
   {
-    title: "Catégories",
-    href: "/dashboard/categories",
-    icon: FolderOpen,
+    title: "Favoris",
+    href: "/user/bookmarks",
+    icon: Bookmark,
   },
   {
-    title: "Médias",
-    href: "/dashboard/medias",
-    icon: Image,
+    title: "Historique",
+    href: "/user/history",
+    icon: Clock,
   },
 ];
 
-const managementNavItems = [
+const accountNavItems = [
   {
-    title: "Utilisateurs",
-    href: "/dashboard/users",
-    icon: Users,
-  },
-  {
-    title: "Commentaires",
-    href: "/dashboard/comments",
-    icon: MessageSquare,
-  },
-  {
-    title: "Statistiques",
-    href: "/dashboard/analytics",
-    icon: BarChart3,
+    title: "Abonnement",
+    href: "/user/subscription",
+    icon: CreditCard,
   },
   {
     title: "Notifications",
-    href: "/dashboard/notifications",
+    href: "/user/notifications",
     icon: Bell,
   },
-];
-
-const settingsNavItems = [
   {
     title: "Paramètres",
-    href: "/dashboard/settings",
+    href: "/user/settings",
     icon: Settings,
   },
 ];
 
-export function AdminSidebar() {
+export function UserSidebar() {
   const pathname = usePathname();
 
   return (
@@ -97,7 +81,7 @@ export function AdminSidebar() {
           </div>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
             <span className="font-serif text-sm font-bold">Etheria Times</span>
-            <span className="text-[10px] text-muted-foreground">Console Admin</span>
+            <span className="text-[10px] text-muted-foreground">Mon espace</span>
           </div>
         </Link>
       </SidebarHeader>
@@ -122,28 +106,10 @@ export function AdminSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Gestion</SidebarGroupLabel>
+          <SidebarGroupLabel>Compte</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {managementNavItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.title}>
-                    <Link href={item.href}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Configuration</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {settingsNavItems.map((item) => (
+              {accountNavItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.title}>
                     <Link href={item.href}>
@@ -165,12 +131,12 @@ export function AdminSidebar() {
             <SidebarMenuButton asChild tooltip="Mon profil">
               <div className="flex items-center gap-2 cursor-pointer">
                 <Avatar className="h-6 w-6">
-                  <AvatarImage src="/placeholder-user.jpg" alt="Admin" />
-                  <AvatarFallback className="text-xs bg-primary/10 text-primary">AD</AvatarFallback>
+                  <AvatarImage src="/placeholder-user.jpg" alt="Utilisateur" />
+                  <AvatarFallback className="text-xs bg-primary/10 text-primary">JD</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-                  <span className="text-sm font-medium">Admin</span>
-                  <span className="text-[10px] text-muted-foreground">admin@etheriatimes.com</span>
+                  <span className="text-sm font-medium">Jean Dupont</span>
+                  <span className="text-[10px] text-muted-foreground">Premium</span>
                 </div>
               </div>
             </SidebarMenuButton>
