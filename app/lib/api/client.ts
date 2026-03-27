@@ -105,6 +105,8 @@ import type {
   Article,
   ArticleListResponse,
   ArticleResponse,
+  HomepageArticlesResponse,
+  SectionArticlesResponse,
   Category,
   CategoryListResponse,
   CategoryResponse,
@@ -402,6 +404,19 @@ export const articlesApi = {
   archive: (id: string) => apiClient.post<ArticleResponse>(`/api/v1/articles/${id}/archive`),
 
   toggleFeatured: (id: string) => apiClient.post<ArticleResponse>(`/api/v1/articles/${id}/feature`),
+
+  getHomepage: (locale: string = "fr") =>
+    apiClient.get<HomepageArticlesResponse>(`/api/v1/articles/homepage`, {
+      params: { locale },
+    }),
+
+  getBySection: (section: string, locale: string = "fr", limit?: number) => {
+    const queryParams: Record<string, string> = { locale };
+    if (limit) queryParams.limit = String(limit);
+    return apiClient.get<SectionArticlesResponse>(`/api/v1/articles/section/${section}`, {
+      params: queryParams,
+    });
+  },
 };
 
 export const categoriesApi = {
@@ -543,10 +558,46 @@ export const adminUsersApi = {
 
   get: (id: string) => apiClient.get<EtheriaUserResponse>(`/api/v1/admin/users/${id}`),
 
+  create: (data: { email: string; firstName?: string; lastName?: string; role?: string }) =>
+    apiClient.post<EtheriaUserResponse>("/api/v1/admin/users", data),
+
   update: (
     id: string,
     data: { firstName?: string; lastName?: string; role?: string; isActive?: boolean }
   ) => apiClient.put<EtheriaUserResponse>(`/api/v1/admin/users/${id}`, data),
 
   delete: (id: string) => apiClient.delete<EtheriaUserResponse>(`/api/v1/admin/users/${id}`),
+};
+
+export interface FooterLink {
+  id: string;
+  category: string;
+  title: string;
+  name: string;
+  href: string;
+  locale: string;
+  position: number;
+  isVisible: boolean;
+}
+
+export interface FooterLinksResponse {
+  success: boolean;
+  data: FooterLink[];
+  error?: string;
+}
+
+export const footerLinksApi = {
+  list: (params?: { locale?: string }) => {
+    const queryParams: Record<string, string> = {};
+    if (params?.locale) queryParams.locale = params.locale;
+    return apiClient.get<FooterLinksResponse>("/api/v1/footer-links", { params: queryParams });
+  },
+
+  create: (data: Omit<FooterLink, "id">) =>
+    apiClient.post<FooterLinksResponse>("/api/v1/admin/footer-links", data),
+
+  update: (id: string, data: Partial<FooterLink>) =>
+    apiClient.put<FooterLinksResponse>(`/api/v1/admin/footer-links/${id}`, data),
+
+  delete: (id: string) => apiClient.delete<FooterLinksResponse>(`/api/v1/admin/footer-links/${id}`),
 };

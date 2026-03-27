@@ -1,14 +1,15 @@
 package models
 
 type User struct {
-	ID        string `json:"id"`
-	Email     string `json:"email"`
-	Name      string `json:"name"`
-	AvatarURL string `json:"avatar_url,omitempty"`
-	Active    bool   `json:"active"`
-	Quota     *Quota `json:"quota,omitempty"`
-	CreatedAt string `json:"created_at,omitempty"`
-	UpdatedAt string `json:"updated_at,omitempty"`
+	ID           string        `json:"id"`
+	Email        string        `json:"email"`
+	Name         string        `json:"name"`
+	AvatarURL    string        `json:"avatar_url,omitempty"`
+	Active       bool          `json:"active"`
+	Quota        *Quota        `json:"quota,omitempty"`
+	Subscription *Subscription `json:"subscription,omitempty"`
+	CreatedAt    string        `json:"created_at,omitempty"`
+	UpdatedAt    string        `json:"updated_at,omitempty"`
 }
 
 type Quota struct {

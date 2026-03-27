@@ -4,6 +4,10 @@ import { Footer } from "@/components/media/footer";
 import { LiveTicker } from "@/components/media/live-ticker";
 import { ArticleCard } from "@/components/media/article-card";
 import { SectionTitle } from "@/components/media/section-title";
+import { articlesApi } from "@/lib/api/client";
+import type { HomepageArticlesResponse, Article } from "@/lib/api/types";
+
+const isDev = process.env.NODE_ENV !== "production";
 
 const liveTickerItems = [
   {
@@ -32,7 +36,46 @@ const liveTickerItems = [
   },
 ];
 
-const featuredArticle = {
+async function getHomepageArticles(locale: string) {
+  if (isDev) {
+    return null;
+  }
+  try {
+    const response = (await articlesApi.getHomepage(locale)) as HomepageArticlesResponse;
+    if (response.success && response.data) {
+      return response.data;
+    }
+  } catch (error) {
+    console.error("Failed to fetch homepage articles:", error);
+  }
+  return null;
+}
+
+function articleToCardProps(article: {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt?: string;
+  categoryId?: string;
+  viewCount?: number;
+  readTime?: number;
+  imageUrl?: string;
+}) {
+  return {
+    title: article.title,
+    excerpt: article.excerpt,
+    category: article.categoryId
+      ? article.categoryId.charAt(0).toUpperCase() + article.categoryId.slice(1).replace(/-/g, " ")
+      : "Actualité",
+    image:
+      article.imageUrl ||
+      "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&h=250&fit=crop",
+    date: "Il y a 1 heure",
+    href: `/article/${article.slug}`,
+  };
+}
+
+const mockFeaturedArticle = {
   title: "Réforme historique : le Parlement adopte la nouvelle loi sur la transition énergétique",
   excerpt: "Après des mois de débats, les diputados ont votado à une large majorité cette réforme.",
   category: "Politique",
@@ -41,7 +84,13 @@ const featuredArticle = {
   href: "/article/reforme-energie",
 };
 
-const topArticles = [
+const mockTopArticles: {
+  title: string;
+  category: string;
+  image: string;
+  date: string;
+  href: string;
+}[] = [
   {
     title: "« C'est un tournant majeur » : les réactions politiques",
     category: "Politique",
@@ -65,7 +114,7 @@ const topArticles = [
   },
 ];
 
-const politicsArticles = [
+const mockPoliticsArticles = [
   {
     title: "Municipales 2026 : les premiers résultats",
     excerpt: "Les bureaux de vote ont fermé leurs portes à 20h.",
@@ -95,7 +144,7 @@ const politicsArticles = [
   },
 ];
 
-const internationalArticles = [
+const mockInternationalArticles = [
   {
     title: "Tensions diplomatiques : sommet reporté",
     excerpt: "Les négociations ont été interrompues.",
@@ -119,7 +168,7 @@ const internationalArticles = [
   },
 ];
 
-const sportsArticles = [
+const mockSportsArticles = [
   {
     title: "Football : le club local qualifié",
     category: "Sport",
@@ -148,7 +197,7 @@ const sportsArticles = [
   },
 ];
 
-const cultureArticles = [
+const mockCultureArticles = [
   {
     title: "Cinéma : le nouveau film primé",
     category: "Culture",
@@ -171,7 +220,7 @@ const cultureArticles = [
   },
 ];
 
-const studentArticles = [
+const mockStudentArticles = [
   {
     title: "Rentrée universitaire : les défis de la vie campus en 2026",
     excerpt: "Logement, transport, budget : les étudiants font face à une nouvelle année.",
@@ -201,7 +250,7 @@ const studentArticles = [
   },
 ];
 
-const gamingArticles = [
+const mockGamingArticles = [
   {
     title: "Nouveau jeu flagship : la révolution du gaming en 2026",
     excerpt: "Les dernières innovations technologiques transforment l'expérience de jeu.",
@@ -231,7 +280,7 @@ const gamingArticles = [
   },
 ];
 
-const informaticaArticles = [
+const mockInformaticaArticles = [
   {
     title: "Intelligence artificielle : les nouvelles avancées qui changent tout",
     excerpt: "L'IA transforme tous les secteurs de l'économie à une vitesse inégalée.",
@@ -261,6 +310,66 @@ const informaticaArticles = [
   },
 ];
 
+const mockSocieteArticles = [
+  {
+    title: "Société : les nouvelles initiatives solidaires",
+    excerpt: "Les associations locales mobilisées pour aider les plus démunis.",
+    category: "Société",
+    image: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=400&h=250&fit=crop",
+    date: "Il y a 1 heure",
+    href: "/article/initiatives-solidaires",
+  },
+  {
+    title: "Logement : le plan gouvernemental présenté",
+    category: "Société",
+    image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=250&fit=crop",
+    date: "Il y a 3 heures",
+    href: "/article/logement-plan",
+  },
+  {
+    title: "Santé : les réformes du système de soins",
+    category: "Société",
+    date: "Il y a 5 heures",
+    href: "/article/sante-reformes",
+  },
+  {
+    title: "Éducation : bilan de la rentrée",
+    category: "Société",
+    date: "Hier",
+    href: "/article/education-bilan",
+  },
+];
+
+const mockEnvironnementArticles = [
+  {
+    title: "Climat : les objectifs de réduction atteints",
+    excerpt: "Etheria respecte ses engagements climatiques pour 2026.",
+    category: "Environnement",
+    image: "https://images.unsplash.com/photo-1569163139599-0f4517e36f51?w=400&h=250&fit=crop",
+    date: "Il y a 2 heures",
+    href: "/article/climat-objectifs",
+  },
+  {
+    title: "Biodiversité : nouvelles aires protégées",
+    category: "Environnement",
+    image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=250&fit=crop",
+    date: "Il y a 4 heures",
+    href: "/article/biodiversite-protected",
+  },
+  {
+    title: "Énergie renouvelable : record de production",
+    category: "Environnement",
+    date: "Il y a 6 heures",
+    href: "/article/energie-record",
+  },
+  {
+    title: "Recyclage : les nouvelles normes",
+    category: "Environnement",
+    date: "Hier",
+    href: "/article/recyclage-normes",
+  },
+];
+
 const opinionArticles = [
   {
     title: "Éditorial : Pourquoi cette réforme est nécessaire",
@@ -282,7 +391,7 @@ const opinionArticles = [
   },
 ];
 
-const mostReadArticles = [
+const mockMostReadArticles = [
   {
     title: "Réforme historique : le Parlement adopte la loi",
     date: "Il y a 2 heures",
@@ -314,6 +423,38 @@ export default async function LocaleHomePage({ params }: { params: Promise<{ loc
   const { locale: paramLocale } = await params;
   const locale: Locale = paramLocale && isValidLocale(paramLocale) ? paramLocale : defaultLocale;
 
+  const homepageData = await getHomepageArticles(locale);
+
+  const featured = homepageData?.featured
+    ? articleToCardProps(homepageData.featured)
+    : mockFeaturedArticle;
+  const top = homepageData?.topArticles?.map(articleToCardProps) || mockTopArticles;
+  const mostRead =
+    homepageData?.mostRead?.map((a) => ({
+      title: a.title,
+      date: "Il y a 1 heure",
+      href: `/article/${a.slug}`,
+    })) || mockMostReadArticles;
+
+  const politicsArticles =
+    homepageData?.sections?.politique?.map(articleToCardProps) || mockPoliticsArticles;
+  const internationalArticles =
+    homepageData?.sections?.international?.map(articleToCardProps) || mockInternationalArticles;
+  const sportsArticles =
+    homepageData?.sections?.sport?.map(articleToCardProps) || mockSportsArticles;
+  const cultureArticles =
+    homepageData?.sections?.culture?.map(articleToCardProps) || mockCultureArticles;
+  const studentArticles =
+    homepageData?.sections?.etudiant?.map(articleToCardProps) || mockStudentArticles;
+  const gamingArticles =
+    homepageData?.sections?.["jeu-video"]?.map(articleToCardProps) || mockGamingArticles;
+  const informaticaArticles =
+    homepageData?.sections?.informatique?.map(articleToCardProps) || mockInformaticaArticles;
+  const societeArticles =
+    homepageData?.sections?.societe?.map(articleToCardProps) || mockSocieteArticles;
+  const environnementArticles =
+    homepageData?.sections?.environnement?.map(articleToCardProps) || mockEnvironnementArticles;
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -322,10 +463,10 @@ export default async function LocaleHomePage({ params }: { params: Promise<{ loc
         <section className="mx-auto max-w-7xl px-4 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <ArticleCard {...featuredArticle} variant="featured" categoryColor="bg-primary" />
+              <ArticleCard {...featured} variant="featured" categoryColor="bg-primary" />
             </div>
             <div className="space-y-4">
-              {topArticles.map((article, i) => (
+              {top.map((article, i) => (
                 <ArticleCard key={i} {...article} variant="horizontal" />
               ))}
             </div>
@@ -429,12 +570,42 @@ export default async function LocaleHomePage({ params }: { params: Promise<{ loc
                   ))}
                 </div>
               </div>
+
+              <div>
+                <SectionTitle title="Société" href="/societe" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <ArticleCard {...societeArticles[0]} variant="vertical" />
+                  <ArticleCard {...societeArticles[1]} variant="vertical" />
+                </div>
+                <div className="mt-4 divide-y divide-border border-t border-border">
+                  {societeArticles.slice(2).map((a, i) => (
+                    <div key={i} className="py-3">
+                      <ArticleCard {...a} variant="compact" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <SectionTitle title="Environnement" href="/environnement" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <ArticleCard {...environnementArticles[0]} variant="vertical" />
+                  <ArticleCard {...environnementArticles[1]} variant="vertical" />
+                </div>
+                <div className="mt-4 divide-y divide-border border-t border-border">
+                  {environnementArticles.slice(2).map((a, i) => (
+                    <div key={i} className="py-3">
+                      <ArticleCard {...a} variant="compact" />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
             <div className="space-y-8">
               <div className="bg-muted p-4 rounded-sm">
                 <SectionTitle title="Les plus lus" />
                 <div className="space-y-0">
-                  {mostReadArticles.map((a, i) => (
+                  {mostRead.map((a, i) => (
                     <div key={i} className="flex gap-3 py-3 border-b border-border last:border-b-0">
                       <span className="font-serif text-2xl font-bold text-primary/30">{i + 1}</span>
                       <ArticleCard {...a} variant="compact" />

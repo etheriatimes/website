@@ -115,6 +115,7 @@ type Article struct {
 	SeoTitle       string        `json:"seoTitle,omitempty"`
 	SeoDescription string        `json:"seoDescription,omitempty"`
 	SeoKeywords    string        `json:"seoKeywords,omitempty"`
+	Locale         string        `json:"locale,omitempty"`
 	AuthorID       string        `json:"authorId"`
 	CategoryID     string        `json:"categoryId,omitempty"`
 	CreatedAt      time.Time     `json:"createdAt"`
@@ -299,4 +300,15 @@ type PaginatedResponse struct {
 	Page       int         `json:"page"`
 	PageSize   int         `json:"pageSize"`
 	TotalPages int         `json:"totalPages"`
+}
+
+type FooterLink struct {
+	ID        string `json:"id"`
+	Category  string `json:"category"`
+	Title     string `json:"title"`
+	Name      string `json:"name"`
+	Href      string `json:"href"`
+	Locale    string `json:"locale"`
+	Position  int    `json:"position"`
+	IsVisible bool   `json:"isVisible"`
 }

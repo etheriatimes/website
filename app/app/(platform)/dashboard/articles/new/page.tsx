@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ArrowLeft, Save, Eye, ImageIcon, Search, X } from "lucide-react";
+import { ArrowLeft, Save, Eye, ImageIcon, Search, X, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { locales } from "@/lib/locale";
+import { articlesApi } from "@/lib/api/client";
 
 const categories = [
   "Politique",
@@ -53,6 +55,7 @@ const tags = [
 ];
 
 export default function NewArticlePage() {
+  const router = useRouter();
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
@@ -66,6 +69,55 @@ export default function NewArticlePage() {
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async (publish: boolean = false) => {
+    if (!title.trim()) return;
+
+    setIsSaving(true);
+    try {
+      const categoryId = category.toLowerCase().replace(/é/g, "e").replace(/ /g, "-");
+
+      const response = await articlesApi.create({
+        title,
+        content,
+        excerpt,
+        categoryId,
+        imageUrl: selectedImage,
+      });
+
+      if (response.success && response.data) {
+        const newArticle = {
+          id: response.data.id,
+          title: response.data.title,
+          excerpt: response.data.excerpt || "",
+          category: category || "Non catégorisé",
+          author: "Vous",
+          status: (publish ? "published" : "draft") as "published" | "draft",
+          publishedAt: publish ? new Date().toISOString() : undefined,
+          updatedAt: new Date().toISOString(),
+          views: 0,
+          image: selectedImage,
+        };
+
+        if (typeof window !== "undefined") {
+          const stored = sessionStorage.getItem("newArticles");
+          const newArticles = stored ? JSON.parse(stored) : [];
+          newArticles.unshift(newArticle);
+          sessionStorage.setItem("newArticles", JSON.stringify(newArticles));
+        }
+
+        if (publish && response.data.id) {
+          await articlesApi.publish(response.data.id);
+        }
+        router.push("/dashboard/articles");
+      }
+    } catch (error) {
+      console.error("Failed to save article:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) =>
@@ -116,8 +168,20 @@ export default function NewArticlePage() {
             <Eye className="mr-2 h-4 w-4" />
             Aperçu
           </Button>
-          <Button size="sm">
-            <Save className="mr-2 h-4 w-4" />
+          <Button size="sm" onClick={() => handleSave(false)} disabled={isSaving || !title.trim()}>
+            {isSaving ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-4 w-4" />
+            )}
+            Sauvegarder
+          </Button>
+          <Button size="sm" onClick={() => handleSave(true)} disabled={isSaving || !title.trim()}>
+            {isSaving ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-4 w-4" />
+            )}
             Publier
           </Button>
         </div>

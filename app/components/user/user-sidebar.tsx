@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Bookmark,
@@ -27,6 +27,7 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/context/AuthContext";
 
 const mainNavItems = [
   {
@@ -71,11 +72,29 @@ const accountNavItems = [
 
 export function UserSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/");
+  };
+
+  const getInitials = (name: string | undefined | null, email: string) => {
+    if (name) {
+      const parts = name.split(" ");
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      return name.substring(0, 2).toUpperCase();
+    }
+    return email.substring(0, 2).toUpperCase();
+  };
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
       <SidebarHeader className="p-4">
-        <Link href="/dashboard" className="flex items-center gap-2">
+        <Link href="/user" className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <Newspaper className="h-4 w-4" />
           </div>
@@ -131,22 +150,28 @@ export function UserSidebar() {
             <SidebarMenuButton asChild tooltip="Mon profil">
               <div className="flex items-center gap-2 cursor-pointer">
                 <Avatar className="h-6 w-6">
-                  <AvatarImage src="/placeholder-user.jpg" alt="Utilisateur" />
-                  <AvatarFallback className="text-xs bg-primary/10 text-primary">JD</AvatarFallback>
+                  <AvatarImage src={user?.avatarUrl || ""} alt={user?.name || "Utilisateur"} />
+                  <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                    {getInitials(user?.name, user?.email || "U")}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-                  <span className="text-sm font-medium">Jean Dupont</span>
-                  <span className="text-[10px] text-muted-foreground">Premium</span>
+                  <span className="text-sm font-medium">
+                    {user?.name || user?.email || "Utilisateur"}
+                  </span>
                 </div>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="Déconnexion">
-              <Link href="/" className="text-muted-foreground hover:text-destructive">
+              <button
+                onClick={handleLogout}
+                className="w-full text-left text-muted-foreground hover:text-destructive"
+              >
                 <LogOut className="h-4 w-4" />
                 <span>Déconnexion</span>
-              </Link>
+              </button>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

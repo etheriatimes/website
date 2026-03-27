@@ -212,10 +212,13 @@ export default function ArticlesPage() {
   const [selectedArticles, setSelectedArticles] = useState<string[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [articleToDelete, setArticleToDelete] = useState<ArticleDisplay | null>(null);
+  const [newlyCreatedIds, setNewlyCreatedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadArticles();
-  }, [selectedStatus, selectedCategory]);
+  }, [selectedStatus, selectedCategory, newlyCreatedIds]);
+
+  const isDev = process.env.NODE_ENV !== "production";
 
   async function loadArticles() {
     setIsLoading(true);
@@ -223,7 +226,8 @@ export default function ArticlesPage() {
       const status = selectedStatus === "all" ? undefined : selectedStatus;
       const category = selectedCategory === "Toutes" ? undefined : selectedCategory;
       const response = await articlesApi.list({ status, category, pageSize: 50 });
-      if (response.success && response.data) {
+
+      if (response.success && response.data && response.data.length > 0) {
         const mappedArticles = response.data.map((article) => ({
           id: article.id,
           title: article.title,
@@ -236,14 +240,28 @@ export default function ArticlesPage() {
           views: article.viewCount,
           image: article.imageUrl || "",
         }));
+
         setArticles(mappedArticles);
+      } else if (isDev) {
+        setArticles(mockArticles);
       }
     } catch (error) {
       console.error("Failed to load articles:", error);
+      if (isDev) {
+        setArticles(mockArticles);
+      }
     } finally {
       setIsLoading(false);
     }
   }
+
+  useEffect(() => {
+    const handleFocus = () => {
+      loadArticles();
+    };
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [selectedStatus, selectedCategory]);
 
   const filteredArticles = articles.filter((article) => {
     const matchesSearch =

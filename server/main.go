@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/etheriatimes/website/server/src/config"
+	"github.com/etheriatimes/website/server/src/middleware"
 	"github.com/etheriatimes/website/server/src/routes"
 	"github.com/etheriatimes/website/server/src/services"
 )
@@ -42,9 +43,20 @@ func main() {
 
 	cfg := config.Load()
 
+	prismaService, err := services.NewPrismaService(cfg)
+	if err != nil {
+		fmt.Printf("\033[1;33m[!] Warning: Database connection failed: %v\033[0m\n", err)
+		fmt.Printf("\033[1;33m[!] Running in mock mode\033[0m\n")
+	} else {
+		fmt.Printf("\033[1;32m[✓] Database connected\033[0m\n")
+		defer prismaService.Close()
+	}
+
 	jwtService := services.NewJWTService(cfg.JWT.Secret, cfg.JWT.Expiry, cfg.JWT.Issuer)
 
 	router := gin.Default()
+
+	router.Use(middleware.CORS(cfg.CORS.AllowedOrigins))
 
 	routes.SetupRoutes(router, jwtService)
 

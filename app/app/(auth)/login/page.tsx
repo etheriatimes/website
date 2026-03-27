@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
@@ -9,10 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { authApi } from "@/lib/api/client";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
-  const router = useRouter();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -26,19 +25,11 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await authApi.login(email, password);
-
-      if (response.success && response.data) {
-        authApi.storeTokens(response.data.accessToken, response.data.refreshToken);
-        if (response.data.user) {
-          authApi.storeUser(response.data.user);
-        }
-        router.push("/user");
-      } else {
-        setError(response.error || "Email ou mot de passe incorrect");
-      }
-    } catch (err) {
-      setError("Une erreur est survenue. Veuillez réessayer.");
+      await login(email, password);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Une erreur est survenue. Veuillez réessayer.";
+      setError(message);
       console.error("Login error:", err);
     } finally {
       setIsLoading(false);

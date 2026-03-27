@@ -26,6 +26,7 @@ import {
   Video,
   Clock,
   Calendar,
+  BookOpen,
 } from "lucide-react";
 
 import {
@@ -63,6 +64,11 @@ const mainNavItems = [
     title: "Médias",
     href: "/dashboard/medias",
     icon: Image,
+  },
+  {
+    title: "Dossiers",
+    href: "/dashboard/dossiers",
+    icon: BookOpen,
   },
 ];
 
@@ -116,6 +122,11 @@ const managementNavItems = [
     title: "Audit Logs",
     href: "/dashboard/audit-logs",
     icon: Shield,
+  },
+  {
+    title: "Linker",
+    href: "/dashboard/linker",
+    icon: Image,
   },
 ];
 

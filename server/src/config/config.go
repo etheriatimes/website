@@ -14,6 +14,7 @@ type Config struct {
 	Server   ServerConfig
 	Log      LogConfig
 	Mail     MailConfig
+	Database DatabaseConfig
 }
 
 type StalwartConfig struct {
@@ -85,6 +86,10 @@ type POP3Config struct {
 	SkipVerify bool
 }
 
+type DatabaseConfig struct {
+	URL string
+}
+
 func Load() *Config {
 	return &Config{
 		Stalwart: StalwartConfig{
@@ -135,6 +140,9 @@ func Load() *Config {
 				UseTLS:     getEnvBool("POP3_USE_TLS", true),
 				SkipVerify: getEnvBool("POP3_SKIP_VERIFY", false),
 			},
+		},
+		Database: DatabaseConfig{
+			URL: getEnv("DATABASE_URL", "postgresql://aether:password@localhost:5432/etheria_account"),
 		},
 	}
 }

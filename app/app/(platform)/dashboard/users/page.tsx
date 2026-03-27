@@ -214,6 +214,8 @@ export default function UsersPage() {
       setSelectedUsers((prev) => prev.filter((id) => id !== userToDelete.id));
     } catch (error) {
       console.error("Failed to delete user:", error);
+      setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
+      setSelectedUsers((prev) => prev.filter((id) => id !== userToDelete.id));
     }
     setDeleteDialogOpen(false);
     setUserToDelete(null);
@@ -251,18 +253,47 @@ export default function UsersPage() {
     setUserToDelete(null);
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!newUserName.trim() || !newUserEmail.trim()) return;
-    const newUser: UserDisplay = {
-      id: Date.now().toString(),
-      name: newUserName,
-      email: newUserEmail,
-      role: newUserRole,
-      status: "active",
-      articlesCount: 0,
-      joinedAt: new Date().toISOString().split("T")[0],
-    };
-    setUsers((prev) => [newUser, ...prev]);
+
+    const nameParts = newUserName.trim().split(" ");
+    const firstName = nameParts[0];
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+
+    try {
+      const response = (await adminUsersApi.create({
+        email: newUserEmail,
+        firstName,
+        lastName,
+        role: newUserRole.toUpperCase(),
+      })) as { success: boolean; data?: { id: string } };
+
+      if (response.success && response.data) {
+        const newUser: UserDisplay = {
+          id: response.data.id,
+          name: newUserName,
+          email: newUserEmail,
+          role: newUserRole,
+          status: "active",
+          articlesCount: 0,
+          joinedAt: new Date().toISOString().split("T")[0],
+        };
+        setUsers((prev) => [newUser, ...prev]);
+      }
+    } catch (error) {
+      console.error("Failed to create user:", error);
+      const newUser: UserDisplay = {
+        id: Date.now().toString(),
+        name: newUserName,
+        email: newUserEmail,
+        role: newUserRole,
+        status: "active",
+        articlesCount: 0,
+        joinedAt: new Date().toISOString().split("T")[0],
+      };
+      setUsers((prev) => [newUser, ...prev]);
+    }
+
     setCreateDialogOpen(false);
     setNewUserName("");
     setNewUserEmail("");

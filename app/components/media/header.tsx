@@ -136,17 +136,21 @@ export function Header() {
                   <span className="sr-only">Mon compte</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                {isAuthenticated ? (
+              <DropdownMenuContent align="end" className="w-56">
+                {isAuthenticated && user ? (
                   <>
+                    <div className="px-2 py-1.5 border-b">
+                      <p className="text-sm font-medium truncate">{user.name || user.email}</p>
+                      <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    </div>
                     <DropdownMenuItem asChild>
-                      <Link href="/inbox" className="flex items-center">
+                      <Link href="/user" className="flex items-center">
                         <User className="mr-2 h-4 w-4" />
                         Mon compte
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/settings" className="flex items-center">
+                      <Link href="/user/settings" className="flex items-center">
                         <Settings className="mr-2 h-4 w-4" />
                         Paramètres
                       </Link>
@@ -179,12 +183,14 @@ export function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Subscribe Button */}
-            <Link href={getLocaleHref("/abonnement")}>
-              <Button className="bg-red-600 hover:bg-red-700 text-white h-8 px-3 text-sm hidden sm:flex">
-                S'abonner
-              </Button>
-            </Link>
+            {/* Subscribe Button - hide for admin users */}
+            {!(isAuthenticated && user?.email?.toLowerCase().endsWith("@etheriatimes.com")) && (
+              <Link href={getLocaleHref("/abonnement")}>
+                <Button className="bg-red-600 hover:bg-red-700 text-white h-8 px-3 text-sm hidden sm:flex">
+                  S'abonner
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 

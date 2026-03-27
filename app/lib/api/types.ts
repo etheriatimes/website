@@ -411,6 +411,20 @@ export interface ArticleListResponse extends ApiResponse {
 export interface ArticleResponse extends ApiResponse {
   data?: Article;
 }
+
+export interface HomepageArticlesResponse extends ApiResponse {
+  data?: {
+    featured: Article;
+    topArticles: Article[];
+    mostRead: Article[];
+    sections: Record<string, Article[]>;
+  };
+}
+
+export interface SectionArticlesResponse extends ApiResponse {
+  data?: Article[];
+}
+
 export interface CategoryListResponse extends ApiResponse {
   data?: Category[];
   total?: number;

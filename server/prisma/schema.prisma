@@ -40,6 +40,91 @@ enum NotificationType {
   COMMENT
 }
 
+enum SocialPlatform {
+  TWITTER
+  FACEBOOK
+  INSTAGRAM
+  LINKEDIN
+  YOUTUBE
+  DISCORD
+}
+
+enum AdCampaignStatus {
+  ACTIVE
+  PAUSED
+  DRAFT
+  COMPLETED
+}
+
+enum AdCampaignType {
+  BANNER
+  SPONSORED
+  VIDEO
+  NATIVE
+}
+
+enum AdPlacementStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum AuditLogStatus {
+  SUCCESS
+  FAILED
+  WARNING
+}
+
+enum ApiKeyType {
+  PUBLIC
+  SECRET
+}
+
+enum ApiKeyStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
+enum ScheduledPostStatus {
+  SCHEDULED
+  PUBLISHED
+  CANCELLED
+  FAILED
+}
+
+enum RecurringPattern {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum SeoAuditStatus {
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+enum KeywordTrend {
+  UP
+  DOWN
+  STABLE
+}
+
+enum NewsletterStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  FAILED
+}
+
+enum SystemLogLevel {
+  INFO
+  WARNING
+  ERROR
+  DEBUG
+}
+
 model User {
   id                String    @id @default(cuid())
   email             String    @unique
@@ -63,6 +148,8 @@ model User {
   notifications     Notification[]
   sessions          Session[]
   securityActivities SecurityActivity[]
+  socialAccounts    SocialAccount[]
+  scheduledPosts    ScheduledPost[]
 }
 
 model UserProfile {
@@ -161,6 +248,7 @@ model Article {
   seoTitle      String?
   seoDescription String?
   seoKeywords   String?
+  locale        String        @default("fr")
   authorId      String
   author        User          @relation(fields: [authorId], references: [id])
   categoryId    String?
@@ -168,6 +256,7 @@ model Article {
   comments      Comment[]
   bookmarks     Bookmark[]
   readingHistory ReadingHistory[]
+  scheduledPosts ScheduledPost[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
@@ -176,6 +265,7 @@ model Article {
   @@index([status])
   @@index([publishedAt])
   @@index([slug])
+  @@index([locale])
 }
 
 model Comment {
@@ -284,4 +374,212 @@ model SystemSettings {
   version           String   @default("1.0.0")
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+}
+
+model SocialAccount {
+  id            String         @id @default(cuid())
+  platform      SocialPlatform
+  accountName   String
+  accountId     String
+  connected     Boolean        @default(false)
+  lastSync      DateTime?
+  followers     Int            @default(0)
+  following     Int            @default(0)
+  posts         Int            @default(0)
+  autoPost      Boolean        @default(false)
+  accessToken   String?
+  refreshToken  String?
+  tokenExpiresAt DateTime?
+  userId        String?
+  user          User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@unique([platform, accountId])
+  @@index([platform])
+  @@index([userId])
+}
+
+model AdCampaign {
+  id          String           @id @default(cuid())
+  name        String
+  status      AdCampaignStatus @default(DRAFT)
+  type        AdCampaignType   @default(BANNER)
+  impressions Int              @default(0)
+  clicks      Int              @default(0)
+  ctr         Float            @default(0)
+  spend       Float            @default(0)
+  budget      Float
+  startDate   DateTime
+  endDate     DateTime?
+  advertiser  String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([status])
+  @@index([advertiser])
+}
+
+model AdPlacement {
+  id          String            @id @default(cuid())
+  name        String
+  zone        String
+  format      String
+  position    String
+  impressions Int               @default(0)
+  clicks      Int               @default(0)
+  ctr         Float             @default(0)
+  revenue     Float             @default(0)
+  status      AdPlacementStatus @default(ACTIVE)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([zone])
+  @@index([status])
+}
+
+model AuditLog {
+  id         String         @id @default(cuid())
+  timestamp  DateTime       @default(now())
+  userId     String?
+  userName   String?
+  userEmail  String?
+  action     String
+  resource   String
+  resourceId String?
+  ipAddress  String?
+  userAgent  String?
+  details    String?
+  status     AuditLogStatus @default(SUCCESS)
+  createdAt  DateTime       @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([timestamp])
+}
+
+model ApiKey {
+  id          String        @id @default(cuid())
+  name        String
+  prefix      String
+  key         String        @unique
+  keyHash     String        @unique
+  type        ApiKeyType
+  permissions String[]
+  lastUsed    DateTime?
+  expiresAt   DateTime?
+  status      ApiKeyStatus  @default(ACTIVE)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model ScheduledPost {
+  id               String            @id @default(cuid())
+  content          String
+  platform         SocialPlatform
+  scheduledAt      DateTime
+  status           ScheduledPostStatus @default(SCHEDULED)
+  articleId        String?
+  article          Article?          @relation(fields: [articleId], references: [id])
+  userId           String?
+  user             User?             @relation(fields: [userId], references: [id])
+  mediaCount       Int               @default(0)
+  recurring        Boolean           @default(false)
+  recurringPattern RecurringPattern?
+  publishedAt      DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([platform])
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([userId])
+}
+
+model SeoAudit {
+  id             String         @id @default(cuid())
+  url            String
+  title          String?
+  metaDescription String?
+  h1             String?
+  status         SeoAuditStatus
+  score          Int
+  issues         Json
+  lastChecked    DateTime       @default(now())
+  createdAt      DateTime       @default(now())
+
+  @@index([url])
+}
+
+model Keyword {
+  id              String       @id @default(cuid())
+  keyword         String
+  position        Int
+  previousPosition Int?
+  volume          Int
+  difficulty      String
+  trend           KeywordTrend @default(STABLE)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@unique([keyword])
+}
+
+model MetaTag {
+  id      String @id @default(cuid())
+  name    String
+  content String
+  page    String
+}
+
+model NewsletterCampaign {
+  id            String           @id @default(cuid())
+  name          String
+  subject       String
+  content       String
+  status        NewsletterStatus @default(DRAFT)
+  scheduledAt   DateTime?
+  sentAt        DateTime?
+  recipients    Int              @default(0)
+  opens         Int              @default(0)
+  clicks        Int              @default(0)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([status])
+}
+
+model SystemLog {
+  id        String         @id @default(cuid())
+  level     SystemLogLevel
+  message   String
+  source    String?
+  details   Json?
+  ipAddress String?
+  userId    String?
+  createdAt DateTime       @default(now())
+
+  @@index([level])
+  @@index([source])
+  @@index([createdAt])
+}
+
+model FooterLink {
+  id        String   @id @default(cuid())
+  category  String
+  title     String
+  name      String
+  href      String
+  locale    String   @default("fr")
+  position  Int      @default(0)
+  isVisible Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([locale])
+  @@index([category])
 }

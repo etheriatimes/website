@@ -105,7 +105,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       console.log("[AuthContext] Login successful, user set");
 
-      router.push("/inbox");
+      const isAdmin = email.toLowerCase().endsWith("@etheriatimes.com");
+      router.push(isAdmin ? "/dashboard" : "/user");
     } catch (error) {
       throw error;
     } finally {
