@@ -25,6 +25,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { locales } from "@/lib/locale";
 
 const categories = [
   "Politique",
@@ -32,9 +33,10 @@ const categories = [
   "International",
   "Culture",
   "Sport",
+  "Étudiant",
+  "Jeu Vidéo",
+  "Informatique",
   "Société",
-  "Technologie",
-  "Santé",
   "Environnement",
 ];
 
@@ -56,6 +58,7 @@ export default function NewArticlePage() {
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedLocale, setSelectedLocale] = useState<string>("all");
   const [featured, setFeatured] = useState(false);
   const [allowComments, setAllowComments] = useState(true);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -231,6 +234,34 @@ export default function NewArticlePage() {
             </CardContent>
           </Card>
 
+          {/* Destination / Public */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Destinataires</CardTitle>
+              <CardDescription>Sélectionnez le public cible de l'article</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Select value={selectedLocale} onValueChange={setSelectedLocale}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner une destination" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les pays (International)</SelectItem>
+                  {locales.map((locale) => (
+                    <SelectItem key={locale.code} value={locale.code}>
+                      {locale.flag} {locale.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-2">
+                {selectedLocale === "all"
+                  ? "L'article sera visible dans tous les pays"
+                  : `L'article sera visible uniquement en ${locales.find((l) => l.code === selectedLocale)?.label}`}
+              </p>
+            </CardContent>
+          </Card>
+
           {/* Tags */}
           <Card>
             <CardHeader>
@@ -302,6 +333,12 @@ export default function NewArticlePage() {
               <p className="text-muted-foreground italic">Sans titre</p>
             )}
             {category && <p className="text-sm text-primary font-medium">{category}</p>}
+            {selectedLocale !== "all" && (
+              <p className="text-xs text-muted-foreground">
+                {locales.find((l) => l.code === selectedLocale)?.flag} Article réservé aux lecteurs
+                de {locales.find((l) => l.code === selectedLocale)?.label}
+              </p>
+            )}
             {excerpt && <p className="text-muted-foreground italic border-l-2 pl-3">{excerpt}</p>}
             {content ? (
               <div className="space-y-3 text-sm leading-relaxed">

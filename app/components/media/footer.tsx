@@ -1,4 +1,9 @@
 import Link from "next/link";
+import { locales, type Locale } from "@/lib/locale";
+
+interface FooterProps {
+  locale?: Locale;
+}
 
 const footerLinks = {
   dossiers: [
@@ -98,7 +103,17 @@ function LinkColumn({ title, links }: LinkColumnProps) {
   );
 }
 
-export function Footer() {
+const countryNames: Record<string, string> = {
+  FR: "France",
+  BE: "Belgique",
+  CH: "Suisse",
+};
+
+export function Footer({ locale = "fr" }: FooterProps) {
+  const currentLocale = locales.find((l) => l.code === locale);
+  const regionName = currentLocale?.label.split(" ")[0] || "International";
+  const countryName = countryNames[currentLocale?.country || ""] || "International";
+
   return (
     <footer className="bg-background text-foreground border-t border-border">
       <div className="mx-auto max-w-7xl px-4 py-12">
@@ -118,7 +133,7 @@ export function Footer() {
             <div>
               <Link href="/" className="inline-block">
                 <h2 className="font-serif text-xl font-bold text-foreground">
-                  The Etheria Times - International
+                  The Etheria Times - {regionName}
                 </h2>
               </Link>
               <p className="mt-4 text-sm text-foreground/70 max-w-md">
@@ -253,7 +268,7 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-border">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-foreground/60">
-              © 2026 The Etheria Times. All rights reserved.{""}
+              © 2026 The Etheria Times {countryName}. All rights reserved.{""}
               <span className="hidden sm:inline"> · </span>
               <span className="block sm:inline mt-1 sm:mt-0">
                 <Link

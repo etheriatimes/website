@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/AuthContext";
+import { useLocale } from "@/context/locale-context";
 import { locales, type Locale } from "@/lib/locale";
 
 const categories = [
@@ -22,12 +23,21 @@ const categories = [
   { name: "International", href: "/international" },
   { name: "Culture", href: "/culture" },
   { name: "Sport", href: "/sport" },
+  { name: "Étudiant", href: "/etudiant" },
+  { name: "Jeu Vidéo", href: "/jeu-video" },
+  { name: "Informatique", href: "/informatique" },
   { name: "Société", href: "/societe" },
   { name: "Environnement", href: "/environnement" },
 ];
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { locale } = useLocale();
+
+  const getLocaleHref = (href: string) => {
+    if (href === "/") return `/${locale}`;
+    return `/${locale}${href}`;
+  };
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -77,7 +87,10 @@ export function Header() {
             </span>
           </div>
 
-          <Link href="/" className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
+          <Link
+            href={`/${locale}`}
+            className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2"
+          >
             <h1 className="font-serif text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground whitespace-nowrap">
               The Etheria Times
             </h1>
@@ -167,7 +180,7 @@ export function Header() {
             </DropdownMenu>
 
             {/* Subscribe Button */}
-            <Link href="/abonnement">
+            <Link href={getLocaleHref("/abonnement")}>
               <Button className="bg-red-600 hover:bg-red-700 text-white h-8 px-3 text-sm hidden sm:flex">
                 S'abonner
               </Button>
@@ -215,7 +228,7 @@ export function Header() {
             {categories.map((category, index) => (
               <li key={category.name}>
                 <Link
-                  href={category.href}
+                  href={getLocaleHref(category.href)}
                   className={`block px-4 py-2.5 text-sm font-medium transition-colors ${
                     index === 0
                       ? "text-primary font-semibold"
@@ -237,7 +250,7 @@ export function Header() {
             {categories.map((category) => (
               <li key={category.name}>
                 <Link
-                  href={category.href}
+                  href={getLocaleHref(category.href)}
                   className="block px-2 py-3 text-sm font-medium text-foreground hover:text-primary transition-colors border-b border-border last:border-b-0"
                   onClick={() => setMobileMenuOpen(false)}
                 >

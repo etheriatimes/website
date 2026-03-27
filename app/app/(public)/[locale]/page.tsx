@@ -171,6 +171,96 @@ const cultureArticles = [
   },
 ];
 
+const studentArticles = [
+  {
+    title: "Rentrée universitaire : les défis de la vie campus en 2026",
+    excerpt: "Logement, transport, budget : les étudiants font face à une nouvelle année.",
+    category: "Étudiant",
+    image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=250&fit=crop",
+    date: "Il y a 1 heure",
+    href: "/article/rentree-universitaire",
+  },
+  {
+    title: "Bourses étudiantes : les nouvelles aides annoncées",
+    category: "Étudiant",
+    image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400&h=250&fit=crop",
+    date: "Il y a 4 heures",
+    href: "/article/bourses-etudiantes",
+  },
+  {
+    title: "Orientation post-bac : les filières les plus demandées",
+    category: "Étudiant",
+    date: "Il y a 6 heures",
+    href: "/article/orientation-bac",
+  },
+  {
+    title: "Jobs étudiants : les secteurs qui recrutent",
+    category: "Étudiant",
+    date: "Hier",
+    href: "/article/jobs-etudiants",
+  },
+];
+
+const gamingArticles = [
+  {
+    title: "Nouveau jeu flagship : la révolution du gaming en 2026",
+    excerpt: "Les dernières innovations technologiques transforment l'expérience de jeu.",
+    category: "Jeu Vidéo",
+    image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=250&fit=crop",
+    date: "Il y a 2 heures",
+    href: "/article/jeux-flagship-2026",
+  },
+  {
+    title: "E-sport : les tournois internationaux battent des records",
+    category: "Jeu Vidéo",
+    image: "https://images.unsplash.com/photo-1542751110-97427bbecf20?w=400&h=250&fit=crop",
+    date: "Il y a 5 heures",
+    href: "/article/esport-records",
+  },
+  {
+    title: "VR gaming : le matériel nouvelle génération arrive",
+    category: "Jeu Vidéo",
+    date: "Il y a 8 heures",
+    href: "/article/vr-nouvelle-gen",
+  },
+  {
+    title: "Indie games : les perles indépendantes à surveiller",
+    category: "Jeu Vidéo",
+    date: "Hier",
+    href: "/article/indie-games",
+  },
+];
+
+const informaticaArticles = [
+  {
+    title: "Intelligence artificielle : les nouvelles avancées qui changent tout",
+    excerpt: "L'IA transforme tous les secteurs de l'économie à une vitesse inégalée.",
+    category: "Informatique",
+    image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=250&fit=crop",
+    date: "Il y a 1 heure",
+    href: "/article/ia-avancees-2026",
+  },
+  {
+    title: "Cybersécurité : les menaces qui ciblent les entreprises",
+    category: "Informatique",
+    image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&h=250&fit=crop",
+    date: "Il y a 3 heures",
+    href: "/article/cybersecurite-menaces",
+  },
+  {
+    title: "Cloud computing : vers une nouvelle ère",
+    category: "Informatique",
+    date: "Il y a 6 heures",
+    href: "/article/cloud-nouvelle-ere",
+  },
+  {
+    title: "Programmation : les langages les plus demandés",
+    category: "Informatique",
+    date: "Hier",
+    href: "/article/langages-programmation",
+  },
+];
+
 const opinionArticles = [
   {
     title: "Éditorial : Pourquoi cette réforme est nécessaire",
@@ -291,6 +381,54 @@ export default async function LocaleHomePage({ params }: { params: Promise<{ loc
                   ))}
                 </div>
               </div>
+
+              <div>
+                <SectionTitle title="Étudiant" href="/etudiant" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <ArticleCard {...studentArticles[0]} variant="vertical" />
+                  <ArticleCard {...studentArticles[1]} variant="vertical" />
+                </div>
+                <div className="mt-4 divide-y divide-border border-t border-border">
+                  {studentArticles.slice(2).map((a, i) => (
+                    <div key={i} className="py-3">
+                      <ArticleCard {...a} variant="compact" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <SectionTitle title="Jeu Vidéo" href="/jeu-video" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <ArticleCard {...gamingArticles[0]} variant="vertical" />
+                  <div className="space-y-4">
+                    <ArticleCard {...gamingArticles[1]} variant="horizontal" />
+                    <ArticleCard {...gamingArticles[2]} variant="compact" />
+                  </div>
+                </div>
+                <div className="mt-4 divide-y divide-border border-t border-border">
+                  {gamingArticles.slice(3).map((a, i) => (
+                    <div key={i} className="py-3">
+                      <ArticleCard {...a} variant="compact" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <SectionTitle title="Informatique" href="/informatique" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <ArticleCard {...informaticaArticles[0]} variant="vertical" />
+                  <ArticleCard {...informaticaArticles[1]} variant="vertical" />
+                </div>
+                <div className="mt-4 divide-y divide-border border-t border-border">
+                  {informaticaArticles.slice(2).map((a, i) => (
+                    <div key={i} className="py-3">
+                      <ArticleCard {...a} variant="compact" />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
             <div className="space-y-8">
               <div className="bg-muted p-4 rounded-sm">
@@ -337,7 +475,7 @@ export default async function LocaleHomePage({ params }: { params: Promise<{ loc
           </div>
         </section>
       </main>
-      <Footer />
+      <Footer locale={locale} />
     </div>
   );
 }

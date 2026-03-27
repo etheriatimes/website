@@ -24,7 +24,7 @@ RUN ARCH=$(uname -m) && \
     && tar -C /usr/local -xzf /tmp/go.tar.gz \
     && rm /tmp/go.tar.gz
 
-ENV PATH="/usr/local/go/bin:/go/bin:${PATH}"
+ENV PATH="/usr/local/go/bin:/go/bin:/root/go/bin:${PATH}"
 ENV GOPATH="/go"
 
 # Copy Go module files

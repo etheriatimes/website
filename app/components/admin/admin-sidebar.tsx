@@ -14,6 +14,13 @@ import {
   Bell,
   LogOut,
   Newspaper,
+  Terminal,
+  CreditCard,
+  Megaphone,
+  Mail,
+  Key,
+  Search,
+  Shield,
 } from "lucide-react";
 
 import {
@@ -75,6 +82,36 @@ const managementNavItems = [
     href: "/dashboard/notifications",
     icon: Bell,
   },
+  {
+    title: "Abonnements",
+    href: "/dashboard/subscriptions",
+    icon: CreditCard,
+  },
+  {
+    title: "Publicités",
+    href: "/dashboard/advertising",
+    icon: Megaphone,
+  },
+  {
+    title: "Newsletter",
+    href: "/dashboard/newsletter",
+    icon: Mail,
+  },
+  {
+    title: "API Keys",
+    href: "/dashboard/api-keys",
+    icon: Key,
+  },
+  {
+    title: "SEO",
+    href: "/dashboard/seo",
+    icon: Search,
+  },
+  {
+    title: "Audit Logs",
+    href: "/dashboard/audit-logs",
+    icon: Shield,
+  },
 ];
 
 const settingsNavItems = [
@@ -82,6 +119,11 @@ const settingsNavItems = [
     title: "Paramètres",
     href: "/dashboard/settings",
     icon: Settings,
+  },
+  {
+    title: "Logs",
+    href: "/dashboard/logs",
+    icon: Terminal,
   },
 ];
 
