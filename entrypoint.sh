@@ -38,20 +38,20 @@ done
 
 echo "[*] Provisioning database..."
 
-# Utiliser un fichier .pgpass pour le mot de passe — évite l'injection SQL
-# et les problèmes de quoting avec les caractères spéciaux
+# Create user (can be in transaction)
 su -s /bin/sh postgres -c "$PG_BIN/psql -v ON_ERROR_STOP=0 <<'SQL'
 DO \$\$
 BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'aether') THEN
     CREATE USER aether WITH SUPERUSER PASSWORD '$DB_PASSWORD';
   END IF;
-  IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'etheria_account') THEN
-    CREATE DATABASE etheria_account OWNER aether;
-  END IF;
 END
 \$\$;
 SQL"
+
+# Create database (must be outside transaction/DO block)
+su -s /bin/sh postgres -c "$PG_BIN/psql -v ON_ERROR_STOP=0 -c \
+  \"SELECT 'CREATE DATABASE etheria_account OWNER aether' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'etheria_account')\" | $PG_BIN/psql -v ON_ERROR_STOP=0"
 
 # ── Migrations Prisma ─────────────────────────────────────────────────────────
 
