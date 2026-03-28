@@ -7,36 +7,22 @@ WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
-COPY app/package.json app/pnpm-lock.yaml    ./
+# COPY . . suffit — copie le repo entier (root pnpm-lock.yaml inclus)
+# Les COPYs individuels suivants étaient redondants et incorrects
+COPY . .
+
 RUN pnpm install --frozen-lockfile
 
-COPY app/app/             ./app/
-COPY app/components/      ./components/
-COPY app/config/          ./config/
-COPY app/context/         ./context/
-COPY app/hooks/           ./hooks/
-COPY app/lib/             ./lib/
-COPY app/public/          ./public/
-COPY app/styles/          ./styles/
-COPY app/tsconfig.json    ./
-COPY app/next.config.ts   ./
-COPY app/postcss.config.mjs ./
-COPY app/components.json  ./
-COPY app/eslint.config.mjs  ./
-COPY app/proxy.ts         ./
-
-# ✅ [PRISMA 1/3] Copier le schema AVANT le generate
-# Le dossier migrations/ est aussi nécessaire pour le deploy runtime
+# Prisma : repositionner le schema depuis server/prisma/ vers ./prisma/
+# (seul COPY nécessaire après COPY . . car le chemin cible diffère)
 COPY server/prisma/ ./prisma/
 
-# ✅ [PRISMA 2/3] Générer le client Prisma avant le build Next.js
-# Sans ça, @prisma/client n'est pas résolu et le build échoue
 RUN npx prisma generate --schema=./prisma/schema.prisma
 
-RUN NODE_ENV=production pnpm build
+RUN NODE_ENV=production pnpm --filter @website/app build
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Stage 2 — Go build  (inchangé)
+# Stage 2 — Go build
 # ══════════════════════════════════════════════════════════════════════════════
 FROM golang:1.24-alpine AS go-builder
 
@@ -90,19 +76,17 @@ EOF
 
 WORKDIR /app
 
-COPY --from=node-builder /app/.next/standalone ./
-COPY --from=node-builder /app/.next/static     ./.next/static
-COPY --from=node-builder /app/public           ./public
+# ⚠️ Chemin corrigé : workspace build → output dans app/.next/ et non .next/
+COPY --from=node-builder /app/app/.next/standalone ./
+COPY --from=node-builder /app/app/.next/static     ./.next/static
+COPY --from=node-builder /app/app/public           ./public
 
-# ✅ [PRISMA 3/3] Copier le CLI Prisma + les migrations dans l'image finale
-# - node_modules/prisma     : le CLI qui exécute "migrate deploy"
-# - node_modules/@prisma    : le runtime query engine (binaire natif)
-# - /app/prisma/            : schema.prisma + dossier migrations/
-COPY --from=node-builder /app/node_modules/prisma       ./node_modules/prisma
-COPY --from=node-builder /app/node_modules/@prisma      ./node_modules/@prisma
-COPY --from=node-builder /app/prisma/                   ./prisma/
+# Prisma CLI + query engine + migrations
+COPY --from=node-builder /app/node_modules/prisma  ./node_modules/prisma
+COPY --from=node-builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=node-builder /app/prisma/              ./prisma/
 
-COPY --from=go-builder   /etheriatimes-api              ./server/etheriatimes-api
+COPY --from=go-builder /etheriatimes-api ./server/etheriatimes-api
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh

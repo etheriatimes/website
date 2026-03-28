@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "account.skygenesisenterprise.com",
+        hostname: "etheriatimes.com",
         pathname: "/**",
       },
       {
