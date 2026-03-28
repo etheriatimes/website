@@ -72,7 +72,7 @@ EOF
 
 WORKDIR /app
 
-COPY --from=node-builder /app/app/.next/standalone ./
+COPY --from=node-builder /app/app/.next/standalone/app ./
 COPY --from=node-builder /app/app/.next/static ./.next/static
 COPY --from=node-builder /app/app/public ./public
 
