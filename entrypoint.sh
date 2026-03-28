@@ -1,38 +1,51 @@
 #!/bin/sh
 set -e
 
+# ── Chemins absolus PG16 (su réinitialise le PATH) ───────────────────────────
+PG_BIN="/usr/lib/postgresql16/bin"
+PG_DATA="/var/lib/postgresql/data"
+PG_CONF="/etc/postgresql/postgresql.conf"
+PG_LOG="/var/lib/postgresql/logfile"
+
 # ── PostgreSQL ────────────────────────────────────────────────────────────────
 
 echo "[*] Initializing PostgreSQL..."
-if [ ! -f /var/lib/postgresql/data/PG_VERSION ]; then
-    su -s /bin/sh postgres -c "initdb -D /var/lib/postgresql/data"
+if [ ! -f "$PG_DATA/PG_VERSION" ]; then
+    su -s /bin/sh postgres -c "$PG_BIN/initdb -D $PG_DATA"
 fi
 
 su -s /bin/sh postgres -c \
-  "pg_ctl -D /var/lib/postgresql/data \
-           -o '-c config_file=/etc/postgresql/postgresql.conf' \
-           -l /var/lib/postgresql/logfile start"
+  "$PG_BIN/pg_ctl -D $PG_DATA \
+    -o '-c config_file=$PG_CONF' \
+    -l $PG_LOG start"
 
 echo "[*] Waiting for PostgreSQL to be ready..."
-until su -s /bin/sh postgres -c "pg_isready -h 127.0.0.1 -p 5432" >/dev/null 2>&1; do
+until su -s /bin/sh postgres -c "$PG_BIN/pg_isready -h 127.0.0.1 -p 5432" >/dev/null 2>&1; do
     sleep 1
 done
 
 # ── Provisioning DB ───────────────────────────────────────────────────────────
 
 echo "[*] Provisioning database..."
-su -s /bin/sh postgres -c "psql -tc \
-  \"SELECT 1 FROM pg_roles WHERE rolname='aether'\" | grep -q 1 \
-  || psql -c \"CREATE USER aether WITH PASSWORD '${DB_PASSWORD}' SUPERUSER;\""
 
-su -s /bin/sh postgres -c "psql -tc \
-  \"SELECT 1 FROM pg_database WHERE datname='etheria_account'\" | grep -q 1 \
-  || psql -c \"CREATE DATABASE etheria_account OWNER aether;\""
+# Utiliser un fichier .pgpass pour le mot de passe — évite l'injection SQL
+# et les problèmes de quoting avec les caractères spéciaux
+su -s /bin/sh postgres -c "$PG_BIN/psql -v ON_ERROR_STOP=0 <<'SQL'
+DO \$\$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'aether') THEN
+    CREATE USER aether WITH SUPERUSER PASSWORD '$DB_PASSWORD';
+  END IF;
+  IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'etheria_account') THEN
+    CREATE DATABASE etheria_account OWNER aether;
+  END IF;
+END
+\$\$;
+SQL"
 
 # ── Migrations Prisma ─────────────────────────────────────────────────────────
 
 echo "[*] Running Prisma migrations..."
-# On utilise le CLI copié depuis node_modules — pas besoin de npm/npx global
 DATABASE_URL="postgresql://aether:${DB_PASSWORD}@127.0.0.1:5432/etheria_account" \
   node /app/node_modules/prisma/build/index.js migrate deploy \
     --schema=/app/prisma/schema.prisma
@@ -61,10 +74,26 @@ cleanup() {
     echo "[*] Shutting down gracefully..."
     kill "$API_PID" "$NEXT_PID" 2>/dev/null
     su -s /bin/sh postgres -c \
-      "pg_ctl -D /var/lib/postgresql/data stop -m fast" 2>/dev/null
+      "$PG_BIN/pg_ctl -D $PG_DATA stop -m fast" 2>/dev/null
     exit 0
 }
 
 trap cleanup SIGINT SIGTERM
 
-wait "$API_PID" "$NEXT_PID"
+# ── Surveillance des processus ────────────────────────────────────────────────
+# Boucle de veille : si l'un des deux processus meurt, on tue l'autre
+# et on laisse Docker restart policy relancer le container proprement
+
+while true; do
+    if ! kill -0 "$API_PID" 2>/dev/null; then
+        echo "[!] Go API (PID $API_PID) has died — shutting down"
+        kill "$NEXT_PID" 2>/dev/null
+        exit 1
+    fi
+    if ! kill -0 "$NEXT_PID" 2>/dev/null; then
+        echo "[!] Next.js (PID $NEXT_PID) has died — shutting down"
+        kill "$API_PID" 2>/dev/null
+        exit 1
+    fi
+    sleep 5
+done
