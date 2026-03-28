@@ -3,10 +3,8 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install pnpm
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
-# Copy Next.js app files
 COPY app/package.json app/pnpm-lock.yaml* ./
 COPY app/app/ ./app/
 COPY app/components/ ./components/
@@ -23,11 +21,9 @@ COPY app/components.json ./
 COPY app/eslint.config.mjs ./
 COPY app/proxy.ts ./
 
-# Build Next.js for production
 RUN pnpm install && NODE_ENV=production pnpm build
 
-# Build Go server
-FROM golang:1.25-alpine AS go-builder
+FROM golang:1.24-alpine AS go-builder
 
 RUN apk add --no-cache gcc musl-dev
 
@@ -40,10 +36,17 @@ COPY server/ ./server/
 
 RUN CGO_ENABLED=1 GOOS=linux go build -o /etheriatimes-api ./server
 
-# Final production image
 FROM alpine:3.19
 
-RUN apk add --no-cache ca-certificates tzdata nodejs
+RUN apk add --no-cache ca-certificates tzdata nodejs postgresql17 postgresql17-client
+
+RUN mkdir -p /var/lib/postgresql/data /run/postgresql && \
+    chown -R postgres:postgres /var/lib/postgresql /run/postgresql && \
+    chmod 700 /var/lib/postgresql/data
+
+RUN mkdir -p /etc/postgresql && \
+    echo "host all all 127.0.0.1/32 trust" > /etc/postgresql/pg_hba.conf && \
+    echo "listen_addresses = '*'" >> /etc/postgresql/postgresql.conf
 
 WORKDIR /app
 
@@ -56,6 +59,16 @@ COPY server/.env.example ./.env
 
 RUN echo '#!/bin/sh' > /entrypoint.sh && \
     echo 'set -e' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo 'echo "[*] Initializing PostgreSQL..."' >> /entrypoint.sh && \
+    echo 'su - postgres -c "initdb -D /var/lib/postgresql/data" 2>/dev/null || true' >> /entrypoint.sh && \
+    echo 'su - postgres -c "pg_ctl -D /var/lib/postgresql/data -l /var/lib/postgresql/logfile start" -o "-c config_file=/etc/postgresql/postgresql.conf"' >> /entrypoint.sh && \
+    echo 'sleep 2' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
+    echo 'echo "[*] Creating database and user..."' >> /entrypoint.sh && \
+    echo 'su - postgres -c "psql -c \"CREATE USER aether WITH PASSWORD '"'"'${DB_PASSWORD}'"'"' SUPERUSER;\"" 2>/dev/null || true' >> /entrypoint.sh && \
+    echo 'su - postgres -c "psql -c \"CREATE DATABASE etheria_account OWNER aether;\"" 2>/dev/null || true' >> /entrypoint.sh && \
+    echo '' >> /entrypoint.sh && \
     echo 'echo "[*] Starting Go API on :8080..."' >> /entrypoint.sh && \
     echo 'cd /app/server' >> /entrypoint.sh && \
     echo './etheriatimes-api & API_PID=$!' >> /entrypoint.sh && \

@@ -24,6 +24,7 @@ const categories = [
   { name: "Culture", href: "/culture" },
   { name: "Sport", href: "/sport" },
   { name: "Étudiant", href: "/etudiant" },
+  { name: "Espace", href: "/espace" },
   { name: "Jeu Vidéo", href: "/jeu-video" },
   { name: "Informatique", href: "/informatique" },
   { name: "Société", href: "/societe" },

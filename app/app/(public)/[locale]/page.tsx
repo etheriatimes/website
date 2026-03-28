@@ -75,6 +75,23 @@ function articleToCardProps(article: {
   };
 }
 
+function mergeWithMock<T extends { title: string }>(
+  realArticles: T[] | undefined,
+  mockArticles: T[],
+  maxCount?: number
+): T[] {
+  const targetCount = maxCount || mockArticles.length;
+
+  if (!realArticles || realArticles.length === 0) {
+    return mockArticles.slice(0, targetCount);
+  }
+
+  const realCount = Math.min(realArticles.length, targetCount);
+  const mockNeeded = targetCount - realCount;
+
+  return [...realArticles.slice(0, realCount), ...mockArticles.slice(0, mockNeeded)];
+}
+
 const mockFeaturedArticle = {
   title: "Réforme historique : le Parlement adopte la nouvelle loi sur la transition énergétique",
   excerpt: "Après des mois de débats, les diputados ont votado à une large majorité cette réforme.",
@@ -247,6 +264,37 @@ const mockStudentArticles = [
     category: "Étudiant",
     date: "Hier",
     href: "/article/jobs-etudiants",
+  },
+];
+
+const mockEspaceArticles = [
+  {
+    title: "Mission spatiale : les nouveaux explorateurs已达 l'ISS",
+    excerpt:
+      "Une équipe internationale célèbre atteint la Station Spatiale Internationale pour une mission de 6 mois.",
+    category: "Espace",
+    image: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=400&h=250&fit=crop",
+    date: "Il y a 1 heure",
+    href: "/article/mission-spatiale-iss",
+  },
+  {
+    title: "Mars : les premières images de la base lunaire",
+    category: "Espace",
+    image: "https://images.unsplash.com/photo-1614728853913-1e2242eb54b8?w=400&h=250&fit=crop",
+    date: "Il y a 3 heures",
+    href: "/article/mars-base-lunaire",
+  },
+  {
+    title: "Télescope spatial : découverte d'exoplanètes habitables",
+    category: "Espace",
+    date: "Il y a 5 heures",
+    href: "/article/telescope-exoplanetes",
+  },
+  {
+    title: "Satellites : nouveaux capteurs pour observer la Terre",
+    category: "Espace",
+    date: "Hier",
+    href: "/article/satellites-observation",
   },
 ];
 
@@ -428,32 +476,57 @@ export default async function LocaleHomePage({ params }: { params: Promise<{ loc
   const featured = homepageData?.featured
     ? articleToCardProps(homepageData.featured)
     : mockFeaturedArticle;
-  const top = homepageData?.topArticles?.map(articleToCardProps) || mockTopArticles;
-  const mostRead =
+  const top = mergeWithMock(homepageData?.topArticles?.map(articleToCardProps), mockTopArticles, 3);
+  const mostRead = mergeWithMock(
     homepageData?.mostRead?.map((a) => ({
       title: a.title,
       date: "Il y a 1 heure",
       href: `/article/${a.slug}`,
-    })) || mockMostReadArticles;
+    })),
+    mockMostReadArticles,
+    5
+  );
 
-  const politicsArticles =
-    homepageData?.sections?.politique?.map(articleToCardProps) || mockPoliticsArticles;
-  const internationalArticles =
-    homepageData?.sections?.international?.map(articleToCardProps) || mockInternationalArticles;
-  const sportsArticles =
-    homepageData?.sections?.sport?.map(articleToCardProps) || mockSportsArticles;
-  const cultureArticles =
-    homepageData?.sections?.culture?.map(articleToCardProps) || mockCultureArticles;
-  const studentArticles =
-    homepageData?.sections?.etudiant?.map(articleToCardProps) || mockStudentArticles;
-  const gamingArticles =
-    homepageData?.sections?.["jeu-video"]?.map(articleToCardProps) || mockGamingArticles;
-  const informaticaArticles =
-    homepageData?.sections?.informatique?.map(articleToCardProps) || mockInformaticaArticles;
-  const societeArticles =
-    homepageData?.sections?.societe?.map(articleToCardProps) || mockSocieteArticles;
-  const environnementArticles =
-    homepageData?.sections?.environnement?.map(articleToCardProps) || mockEnvironnementArticles;
+  const politicsArticles = mergeWithMock(
+    homepageData?.sections?.politique?.map(articleToCardProps),
+    mockPoliticsArticles
+  );
+  const internationalArticles = mergeWithMock(
+    homepageData?.sections?.international?.map(articleToCardProps),
+    mockInternationalArticles
+  );
+  const sportsArticles = mergeWithMock(
+    homepageData?.sections?.sport?.map(articleToCardProps),
+    mockSportsArticles
+  );
+  const cultureArticles = mergeWithMock(
+    homepageData?.sections?.culture?.map(articleToCardProps),
+    mockCultureArticles
+  );
+  const studentArticles = mergeWithMock(
+    homepageData?.sections?.etudiant?.map(articleToCardProps),
+    mockStudentArticles
+  );
+  const gamingArticles = mergeWithMock(
+    homepageData?.sections?.["jeu-video"]?.map(articleToCardProps),
+    mockGamingArticles
+  );
+  const espaceArticles = mergeWithMock(
+    homepageData?.sections?.espace?.map(articleToCardProps),
+    mockEspaceArticles
+  );
+  const informaticaArticles = mergeWithMock(
+    homepageData?.sections?.informatique?.map(articleToCardProps),
+    mockInformaticaArticles
+  );
+  const societeArticles = mergeWithMock(
+    homepageData?.sections?.societe?.map(articleToCardProps),
+    mockSocieteArticles
+  );
+  const environnementArticles = mergeWithMock(
+    homepageData?.sections?.environnement?.map(articleToCardProps),
+    mockEnvironnementArticles
+  );
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -531,6 +604,21 @@ export default async function LocaleHomePage({ params }: { params: Promise<{ loc
                 </div>
                 <div className="mt-4 divide-y divide-border border-t border-border">
                   {studentArticles.slice(2).map((a, i) => (
+                    <div key={i} className="py-3">
+                      <ArticleCard {...a} variant="compact" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <SectionTitle title="Espace" href="/espace" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <ArticleCard {...espaceArticles[0]} variant="vertical" />
+                  <ArticleCard {...espaceArticles[1]} variant="vertical" />
+                </div>
+                <div className="mt-4 divide-y divide-border border-t border-border">
+                  {espaceArticles.slice(2).map((a, i) => (
                     <div key={i} className="py-3">
                       <ArticleCard {...a} variant="compact" />
                     </div>

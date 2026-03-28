@@ -12,6 +12,8 @@ interface FooterLinkGroup {
 }
 
 async function getFooterLinks(locale: string): Promise<Record<string, FooterLinkGroup>> {
+  const prefix = `/${locale}`;
+
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/v1/footer-links?locale=${locale}`,
@@ -27,7 +29,7 @@ async function getFooterLinks(locale: string): Promise<Record<string, FooterLink
     const data = await response.json();
 
     if (!data.success || !data.data) {
-      return getDefaultFooterLinks();
+      return getDefaultFooterLinks(locale);
     }
 
     const links = data.data as FooterLink[];
@@ -38,7 +40,8 @@ async function getFooterLinks(locale: string): Promise<Record<string, FooterLink
         if (!acc[link.category]) {
           acc[link.category] = { title: link.title, links: [] };
         }
-        acc[link.category].links.push({ name: link.name, href: link.href });
+        const href = link.href.startsWith("http") ? link.href : `${prefix}${link.href}`;
+        acc[link.category].links.push({ name: link.name, href });
         return acc;
       }, {});
 
@@ -53,90 +56,94 @@ async function getFooterLinks(locale: string): Promise<Record<string, FooterLink
     return grouped;
   } catch (error) {
     console.error("Error fetching footer links:", error);
-    return getDefaultFooterLinks();
+    return getDefaultFooterLinks(locale);
   }
 }
 
-function getDefaultFooterLinks(): Record<string, FooterLinkGroup> {
+function getDefaultFooterLinks(locale: string): Record<string, FooterLinkGroup> {
+  const prefix = `/${locale}`;
   return {
     dossiers: {
       title: "Dossiers d'actualité",
       links: [
-        { name: "Donald Trump", href: "/dossiers/donald-trump" },
-        { name: "Guerre en Ukraine", href: "/dossiers/guerre-ukraine" },
-        { name: "Affaire Epstein", href: "/dossiers/affaire-epstein" },
-        { name: "Iran", href: "/dossiers/iran" },
-        { name: "Pouvoir d'achat", href: "/dossiers/pouvoir-achat" },
+        { name: "Donald Trump", href: `${prefix}/dossiers/donald-trump` },
+        { name: "Guerre en Ukraine", href: `${prefix}/dossiers/guerre-ukraine` },
+        { name: "Affaire Epstein", href: `${prefix}/dossiers/affaire-epstein` },
+        { name: "Iran", href: `${prefix}/dossiers/iran` },
+        { name: "Pouvoir d'achat", href: `${prefix}/dossiers/pouvoir-achat` },
       ],
     },
     series: {
       title: "Séries",
       links: [
-        { name: "Dans les comptes", href: "/series/comptes" },
-        { name: "Dans le lit", href: "/series/lit" },
-        { name: "Dans la tête", href: "/series/tete" },
-        { name: "Dans la nouvelle vie", href: "/series/nouvelle-vie" },
-        { name: "Dans le cœur", href: "/series/coeur" },
-        { name: "Les quiz d'Etheria Times", href: "/quiz" },
+        { name: "Dans les comptes", href: `${prefix}/series/comptes` },
+        { name: "Dans le lit", href: `${prefix}/series/lit` },
+        { name: "Dans la tête", href: `${prefix}/series/tete` },
+        { name: "Dans la nouvelle vie", href: `${prefix}/series/nouvelle-vie` },
+        { name: "Dans le cœur", href: `${prefix}/series/coeur` },
+        { name: "Les quiz d'Etheria Times", href: `${prefix}/quiz` },
       ],
     },
     sports: {
       title: "Sports",
       links: [
-        { name: "PSG", href: "/sport/psg" },
-        { name: "Ligue des champions", href: "/sport/ligue-champions" },
-        { name: "Ligue 1", href: "/sport/ligue-1" },
-        { name: "Paris FC", href: "/sport/paris-fc" },
-        { name: "Ousmane Dembélé", href: "/sport/dembele" },
-        { name: "Kylian Mbappé", href: "/sport/mbappe" },
-        { name: "Coupe du monde 2026", href: "/sport/cdm-2026" },
+        { name: "PSG", href: `${prefix}/sport/psg` },
+        { name: "Ligue des champions", href: `${prefix}/sport/ligue-champions` },
+        { name: "Ligue 1", href: `${prefix}/sport/ligue-1` },
+        { name: "Paris FC", href: `${prefix}/sport/paris-fc` },
+        { name: "Ousmane Dembélé", href: `${prefix}/sport/dembele` },
+        { name: "Kylian Mbappé", href: `${prefix}/sport/mbappe` },
+        { name: "Coupe du monde 2026", href: `${prefix}/sport/cdm-2026` },
       ],
     },
     politique: {
       title: "Politique",
       links: [
-        { name: "Emmanuel Macron", href: "/politique/macron" },
-        { name: "Sébastien Lecornu", href: "/politique/lecornu" },
-        { name: "Municipales 2026", href: "/politique/municipales-2026" },
-        { name: "Municipales 2026 à Paris", href: "/politique/municipales-2026-paris" },
-        { name: "Résultats municipales 2026", href: "/politique/resultats-municipales-2026" },
-        { name: "Présidentielle 2027", href: "/politique/presidentielle-2027" },
+        { name: "Emmanuel Macron", href: `${prefix}/politique/macron` },
+        { name: "Sébastien Lecornu", href: `${prefix}/politique/lecornu` },
+        { name: "Municipales 2026", href: `${prefix}/politique/municipales-2026` },
+        { name: "Municipales 2026 à Paris", href: `${prefix}/politique/municipales-2026-paris` },
+        {
+          name: "Résultats municipales 2026",
+          href: `${prefix}/politique/resultats-municipales-2026`,
+        },
+        { name: "Présidentielle 2027", href: `${prefix}/politique/presidentielle-2027` },
       ],
     },
     etudiant: {
       title: "Étudiant",
       links: [
-        { name: "Étudiant", href: "/etudiant" },
-        { name: "Enseignement supérieur", href: "/etudiant/seignement-superieur" },
-        { name: "Lycée", href: "/etudiant/lycee" },
-        { name: "Collège", href: "/etudiant/college" },
-        { name: "Guide métiers", href: "/etudiant/guide-metiers" },
-        { name: "Vie étudiante", href: "/etudiant/vie-etudiante" },
+        { name: "Étudiant", href: `${prefix}/etudiant` },
+        { name: "Enseignement supérieur", href: `${prefix}/etudiant/seignement-superieur` },
+        { name: "Lycée", href: `${prefix}/etudiant/lycee` },
+        { name: "Collège", href: `${prefix}/etudiant/college` },
+        { name: "Guide métiers", href: `${prefix}/etudiant/guide-metiers` },
+        { name: "Vie étudiante", href: `${prefix}/etudiant/vie-etudiante` },
       ],
     },
     sorties: {
       title: "Sorties",
       links: [
-        { name: "Agenda sorties", href: "/sorties/agenda" },
-        { name: "Jobs Stages", href: "/sorties/jobs-stages" },
+        { name: "Agenda sorties", href: `${prefix}/sorties/agenda` },
+        { name: "Jobs Stages", href: `${prefix}/sorties/jobs-stages` },
       ],
     },
     videos: {
       title: "Vidéos",
       links: [
-        { name: "Podcasts & Vidéos", href: "/videos" },
-        { name: "Crime story", href: "/videos/crime-story" },
-        { name: "Code source", href: "/videos/code-source" },
-        { name: "Food-checking", href: "/videos/food-checking" },
-        { name: "Biclou", href: "/videos/biclou" },
+        { name: "Podcasts & Vidéos", href: `${prefix}/videos` },
+        { name: "Crime story", href: `${prefix}/videos/crime-story` },
+        { name: "Code source", href: `${prefix}/videos/code-source` },
+        { name: "Food-checking", href: `${prefix}/videos/food-checking` },
+        { name: "Biclou", href: `${prefix}/videos/biclou` },
       ],
     },
     services: {
       title: "Services",
       links: [
-        { name: "Bons plans", href: "/services/bons-plans" },
-        { name: "Sélection du Guide d'achat", href: "/services/guide-achat" },
-        { name: "Météo", href: "/services/meteo" },
+        { name: "Bons plans", href: `${prefix}/services/bons-plans` },
+        { name: "Sélection du Guide d'achat", href: `${prefix}/services/guide-achat` },
+        { name: "Météo", href: `${prefix}/services/meteo` },
       ],
     },
   };
@@ -266,12 +273,13 @@ export async function Footer({ locale = "fr" }: FooterProps) {
   const regionName = currentLocale?.label.split(" ")[0] || "International";
   const countryName = countryNames[currentLocale?.country || ""] || "International";
   const footerLinks = await getFooterLinks(locale);
+  const prefix = `/${locale}`;
 
   const subscriptionLinks = footerLinks.subscription?.links || [
-    { name: "Abonnement", href: "/abonnement" },
-    { name: "Newsletter", href: "/newsletter" },
+    { name: "Abonnement", href: `${prefix}/abonnement` },
+    { name: "Newsletter", href: `${prefix}/newsletter` },
     { name: "Application mobile", href: "/app" },
-    { name: "Archives", href: "/archives" },
+    { name: "Archives", href: `${prefix}/archives` },
   ];
 
   const legalLinks = footerLinks.legal?.links || [
@@ -416,6 +424,11 @@ export async function Footer({ locale = "fr" }: FooterProps) {
                   A Sky Genesis Enterprise company
                 </Link>
               </span>
+            </p>
+            <p className="text-sm text-foreground/60">
+              <Link href="/pgp" className="hover:underline">
+                Vérifiez notre clé PGP publique pour vous assurer de l&apos;authenticité du site
+              </Link>
             </p>
           </div>
         </div>
